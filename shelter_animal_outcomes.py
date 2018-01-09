@@ -7,10 +7,15 @@ import re
 import numpy as np
 from sklearn import linear_model
 from sklearn import metrics
+from sklearn import svm
 from sklearn import svm, grid_search
 from sklearn.ensemble import VotingClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.naive_bayes import GaussianNB
 
 data = pd.read_csv("train.csv")
 data = data[data["OutcomeType"] != "NaN"]
@@ -26,63 +31,109 @@ del data["OutcomeSubtype"]
 
 data['Name'] =data['Name'].fillna(0)
 data.loc[data['Name'] != 0, "Name"] = 1
-data.loc[data["AnimalType"]== "Dog", "AnimalType"] = 1
-data.loc[data["AnimalType"]!= 1, "AnimalType"] = 0
+
 data['Hour'] = data.DateTime.map( lambda x: pd.to_datetime(x).hour )
 
 
 data['Day_of_Week'] = data.DateTime.map( lambda x: pd.to_datetime(x).dayofweek )
-##sns.countplot(data=data, x='Day_of_Week',hue="OutcomeType", palette = "Set3")
+############plt.figure(figsize=(20,10))
+############sns.countplot(data=data, x='Day_of_Week',hue="OutcomeType", palette = "Set3")
+############plt.show()
+############
+############
+############sns.factorplot(x="SexuponOutcome", hue="OutcomeType", col="OutcomeType",
+############                   data=data, kind="count",
+############                   size=4, aspect=.7)
+############
+############
+############
+############plt.rc('xtick', labelsize=1) 
+############plt.rc('ytick', labelsize=1)
+############
+############plt.show()
+############
+############
+############
+############
+############
+############
+############
+############
+############
+############
+############names = list(data.OutcomeType)
+############values = list(data.SexuponOutcome)
+############values2 = list(data.AnimalType)
+############values3 = list(data.AgeuponOutcome)
+############fig, axs = plt.subplots(1, 3, figsize=(9, 3), sharey=True)
+############axs[0].bar(names, values)
+############axs[1].scatter(names, values2)
+############axs[2].plot(names, values3)
+############fig.suptitle('Categorical Plotting')
+############plt.show()
+############
+############
+############
+############
+############
+############
+############
+############
+############
+############
+############plt.figure(figsize=(20,10))
+############sns.countplot(data=data, x='OutcomeType',hue="SexuponOutcome", palette = "Set3")
+############plt.show()
+############
+############
+############plt.figure(figsize=(20,10))
+############sns.countplot(data=data, x='OutcomeType',hue="OutcomeType", palette = "Set3")
+############plt.show()
+############
+############
 
 
-columns = ('Adoption','Died','Euthanasia','Return_to_owner','Transfer')
-
-rows = ['%d Day_of_Week' % x for x in(1,2,3,4,5,6,7)]
-
-values =np.arange(0,2500,500)
-value_increment =1000
-
-colors =plt.cm.BuPu(np.linspace(0,0.5,len(rows)))
-n_rows =len(data)
-
-
-index =np.arange(len(columns)) + 0.3
-bar_width =0.4
-
-y_offset =np.zeros(len(columns))
-
-
-cell_text =[]
-try:
-    for row in range(n_rows):
-        plt.bar(index,data[row],bar_width,bottom=y_offset,color =colors[row])
-        y_offset =y_offset_data[row]
-        cell_text.append(['%1.1f' % (x / 1000.0) for x in y_offset])
 
 
 
-        colors =colors[::-1]
-
-        cell_text.reverse()
-
-
-        the_table = plt.table(cellText=cell_text,
-                              rowLabels=rows,
-                              rowColours=colors,
-                              colLabels=columns,
-                              loc='bottom')
-        plt.subplots_adjust(left=0.2, bottom=0.2)
-        plt.ylabel("Loss in ${0}'s".format(value_increment))
-        plt.yticks(values * value_increment, ['%d' % val for val in values])
-        plt.xticks([])
-        plt.title('Loss by Disaster')
-        plt.show()
-
-except Exception as e:
-    pass
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+##
+##data.OutcomeType.groupby(data.OutcomeType).count().plot(kind='pie')
+##plt.axis('equal')
+##plt.show()
+
+
+
+
+
+
+
+
+
+####plt.figure(figsize=(20,10))
+####sns.countplot(data=data, x='OutcomeType',hue="AnimalType", palette = "Set3")
+####plt.show()
+
+
+
+
+
+data.loc[data["AnimalType"]== "Dog", "AnimalType"] = 1
+data.loc[data["AnimalType"]!= 1, "AnimalType"] = 0
 
 data.loc[data["Day_of_Week"]== 5, "Day_of_Week"] = 10
 data.loc[data["Day_of_Week"]== 6, "Day_of_Week"] = 10
@@ -90,11 +141,10 @@ data.loc[data["Day_of_Week"]!= 10, "Day_of_Week"] = 0
 data.loc[data["Day_of_Week"]== 10, "Day_of_Week"] = 1
 
 
-sns.countplot(data=data, x='Hour',hue="OutcomeType", palette = "Set3")
-plt.xticks(rotation=45)
-
-plt.show()
-
+######plt.figure(figsize=(20,10))
+######sns.countplot(data=data, x='Hour',hue="OutcomeType", palette = "Set3")
+######plt.show()
+######
 
 
 def day(x):
@@ -164,8 +214,8 @@ to_my_breads = data['Breed'].value_counts() > 150
 
 my_breeds = ["Domestic Shorthair", "Chihuahua Shorthair", "Labrador Retriever", 
              "Domestic Medium Hair", "German Shepherd", "Domestic Longhair", "Siamese", "Australian Cattle Dog", 
-             "Dachshund", "Miniature Poodle", "Border Collie","Australian Shepherd", "Rat Terrier", "Catahoula", 
-              "Husky", "Rottweiler", "Bulldog", "Pit Bull", "Boxer"]
+             "Dachshund", "Miniature Poodle", "Border Collie","Australian Shepherd", 
+             "Pit Bull", "Boxer"]
 def breeds(x):
     x = str(x)
     breed = "other"
@@ -173,10 +223,17 @@ def breeds(x):
         if re.search(b, x):
             breed = b
     return breed
-data['My_Breeds'] = data.Breed.apply(breeds) 
-sns.countplot(data=data, x='My_Breeds',hue="OutcomeType", palette = "Set3")
-plt.xticks(rotation=45)
-plt.show()
+data['My_Breeds'] = data.Breed.apply(breeds)
+	
+################plt.figure(figsize=(20,10))
+################sns.countplot(data=data, x='OutcomeType',hue="My_Breeds", palette = "Set3")
+################plt.show()
+
+
+##data.OutcomeType.groupby(data.My_Breeds).count().plot(kind='pie')
+##plt.axis('equal')
+##plt.show()
+
 
 
 
@@ -186,60 +243,144 @@ del data["My_Breeds"]
 del data["Breed"]
 
 
-'''
-##data.convert_objects(convert_numeric=True)
-##def handle_non_numerical_data(data):
-##    columns=data.columns.values
-##
-##    for column in columns:
-##        text_digit_vals={}
-##        def convert_to_int(val):
-##            return text_digit_vals[val]
-##
-##        if data[column].dtype != np.int64 and data[column].dtype !=np.float64:
-##            column_contents=data[column].values.tolist()
-##            unique_elements=set(column_contents)
-##            x=0
-##            for unique in unique_elements:
-##                if unique not in text_digit_vals:
-##                     text_digit_vals[unique]=x
-##                     x+=1
-##               
-##
-##            data[column]=list(map(convert_to_int,data[column]))
-##    return data
-##data=handle_non_numerical_data(data)'''
+
+####data.convert_objects(convert_numeric=True)
+####def handle_non_numerical_data(data):
+####    columns=data.columns.values
+####
+####    for column in columns:
+####        text_digit_vals={}
+####        def convert_to_int(val):
+####            return text_digit_vals[val]
+####
+####        if data[column].dtype != np.int64 and data[column].dtype !=np.float64:
+####            column_contents=data[column].values.tolist()
+####            unique_elements=set(column_contents)
+####            x=0
+####            for unique in unique_elements:
+####                if unique not in text_digit_vals:
+####                     text_digit_vals[unique]=x
+####                     x+=1
+####               
+####
+####            data[column]=list(map(convert_to_int,data[column]))
+####    return data
+####data=handle_non_numerical_data(data)
 features = data.columns.tolist() 
 features.remove("DateTime")
 features.remove("OutcomeType")
 features.remove("Color")
 
 shuffled_rows = np.random.permutation(data.index)
-highest_train_row = int(data.shape[0] * .70)
+highest_train_row = int(data.shape[0] * .5714178825289936)
 train = data.loc[shuffled_rows[:highest_train_row], :]
 my_test = data.loc[shuffled_rows[highest_train_row:], :]
 
 
 
+##########
+##########alg = linear_model.LogisticRegression(random_state=1)
+##########alg.fit(train[features], train["OutcomeType"])
+##########probs = alg.predict_proba(my_test[features])
+##########score = metrics.log_loss(my_test["OutcomeType"], probs)
+##########print(score)
+##########alg9 = GradientBoostingClassifier(random_state=1, n_estimators=25, max_depth=3)
+##########alg9.fit(train[features], train["OutcomeType"])
+##########probs = alg9.predict_proba(my_test[features])
+##########score = metrics.log_loss(my_test["OutcomeType"], probs)
+##########print(score)
 
-alg = linear_model.LogisticRegression(random_state=1)
-alg.fit(train[features], train["OutcomeType"])
-probs = alg.predict_proba(my_test[features])
+########
+########
+########parameters = {'kernel':('linear', 'rbf'), 'C':[0.001, 0.01, 0.1, 1, 10]}
+########svr = svm.SVC(probability=True)
+########clf = grid_search.GridSearchCV(svr, parameters)
+########clf.fit(train[features], train["OutcomeType"])
+########probs = clf.predict_proba(my_test[features])
+########score = metrics.log_loss(my_test["OutcomeType"], probs)
+########print(score)
+########
+########
+########
+########alg10 = GaussianNB()
+########alg10.fit(train[features], train["OutcomeType"])
+########probs = alg2.predict_proba(my_test[features])
+########score = metrics.log_loss(my_test["OutcomeType"], probs)
+########print(score)
+
+
+
+
+########alg2 = RandomForestClassifier()
+########alg2.fit(train[features], train["OutcomeType"])
+########probs = alg2.predict_proba(my_test[features])
+########score = metrics.log_loss(my_test["OutcomeType"], probs)
+########print(score)
+
+
+
+alg7 = CalibratedClassifierCV()
+alg7.fit(train[features], train["OutcomeType"])
+probs = alg7.predict_proba(my_test[features])
 score = metrics.log_loss(my_test["OutcomeType"], probs)
 print(score)
-alg9 = GradientBoostingClassifier(random_state=1, n_estimators=25, max_depth=3)
-alg9.fit(train[features], train["OutcomeType"])
-probs = alg9.predict_proba(my_test[features])
-score = metrics.log_loss(my_test["OutcomeType"], probs)
-print(score)
 
 
-
-####parameters = {'kernel':('linear', 'rbf'), 'C':[0.001, 0.01, 0.1, 1, 10]}
-####svr = svm.SVC(probability=True)
-####clf = grid_search.GridSearchCV(svr, parameters)
-####clf.fit(train[features], train["OutcomeType"])
-####probs = clf.predict_proba(my_test[features])
+######alg6 = DecisionTreeClassifier()
+######alg6.fit(train[features], train["OutcomeType"])
+######probs = alg6.predict_proba(my_test[features])
+######score = metrics.log_loss(my_test["OutcomeType"], probs)
+######print(score)
+######
+######
+######alg4 =AdaBoostClassifier()
+######alg4.fit(train[features], train["OutcomeType"])
+######probs = alg4.predict_proba(my_test[features])
+######score = metrics.log_loss(my_test["OutcomeType"], probs)
+######print(score)
+######
+######alg8 = svm.SVC(probability=True)
+######alg8.fit(train[features], train["OutcomeType"])
+######probs = alg8.predict_proba(my_test[features])
+######score = metrics.log_loss(my_test["OutcomeType"], probs)
+######print(score)
+##
+##eclf = VotingClassifier(estimators=[('lr', alg), ('GBC', alg9),('calC', alg7)], voting='soft')
+##eclf.fit(train[features], train["OutcomeType"])
+##probs = eclf.predict_proba(my_test[features])
+##score = metrics.log_loss(my_test["OutcomeType"], probs)
+##print(score)
+####
+####eclf0 = VotingClassifier(estimators=[('lr', alg), ('svm', alg8)], voting='soft')
+####eclf0.fit(train[features], train["OutcomeType"])
+####probs = eclf0.predict_proba(my_test[features])
+####score = metrics.log_loss(my_test["OutcomeType"], probs)
+####print(score)
+####
+####eclf1 = VotingClassifier(estimators=[('lr', alg), ('calC', alg7)], voting='hard')
+####eclf1.fit(train[features], train["OutcomeType"])
+####probs = eclf1.predict_proba(my_test[features])
+####score = metrics.log_loss(my_test["OutcomeType"], probs)
+####print(score)
+####
+####
+####eclf2 = VotingClassifier(estimators=[('lr', alg), ('svm', alg8), ("GBC", alg9)], voting='soft')
+####eclf2.fit(train[features], train["OutcomeType"])
+####probs = eclf2.predict_proba(my_test[features])
+####score = metrics.log_loss(my_test["OutcomeType"], probs)
+####print(score)
+####
+####
+####
+####eclf3 = VotingClassifier(estimators=[('lr', alg), ("GBC", alg9)], voting='soft')
+####eclf3.fit(train[features], train["OutcomeType"])
+####probs = eclf3.predict_proba(my_test[features])
+####score = metrics.log_loss(my_test["OutcomeType"], probs)
+####print(score)
+####
+####eclf4 = VotingClassifier(estimators=[('svm', alg8), ("GBC", alg9)], voting='soft')
+####eclf4.fit(train[features], train["OutcomeType"])
+####probs = eclf4.predict_proba(my_test[features])
 ####score = metrics.log_loss(my_test["OutcomeType"], probs)
 ####print(score)
 ####
@@ -248,9 +389,9 @@ print(score)
 ####probs = eclf5.predict_proba(my_test[features])
 ####score = metrics.log_loss(my_test["OutcomeType"], probs)
 ####print(score)
-
-
-
+####
+####
+####
 
 
 test = pd.read_csv("test.csv")
@@ -282,10 +423,10 @@ test = pd.concat([test, breed_dummies], axis=1)
 del test["My_Breeds"]
 del test["Breed"]
 
-result = pd.DataFrame(alg.predict_proba(test[features]), index=test.index, columns=alg.classes_)
+result = pd.DataFrame(alg7.predict_proba(test[features]), index=test.index, columns=alg7.classes_)
 sample_submission = pd.read_csv("sample_submission.csv")
 sample_submission.head()
 mid = sample_submission['ID']
 result.insert(0, 'ID', mid)
-result.to_csv("etcareva13.csv", index=False)
+result.to_csv("etcareva11.csv", index=False)
 
